@@ -40,7 +40,7 @@ const TechnicianRegisterPage = () => {
     e.preventDefault();
     try {
       await axios.post(
-        "http://localhost:8031/api/register/technician/",
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/register/technician/`,
         formData
       );
       alert("Teknisyen başarıyla kaydedildi.");
@@ -50,7 +50,7 @@ const TechnicianRegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="py-8 bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
         <h2 className="text-3xl font-semibold text-center mb-6">
           Teknisyen Kayıt

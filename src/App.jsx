@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import TechnicianRegisterPage from "./pages/TechnicianRegisterPage";
 import PharmacyRegisterPage from "./pages/PharmacyRegisterPage";
+import ProtectedRoute from "./components/Navigation/ProtectedRoute";
 
 const App = () => {
   return (
@@ -14,14 +15,29 @@ const App = () => {
         <Navbar />
         <div>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/login"
+              element={
+                <ProtectedRoute>
+                  <LoginPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/register/technician"
-              element={<TechnicianRegisterPage />}
+              element={
+                <ProtectedRoute>
+                  <TechnicianRegisterPage />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/register/pharmacy"
-              element={<PharmacyRegisterPage />}
+              element={
+                <ProtectedRoute>
+                  <PharmacyRegisterPage />
+                </ProtectedRoute>
+              }
             />
           </Routes>
         </div>

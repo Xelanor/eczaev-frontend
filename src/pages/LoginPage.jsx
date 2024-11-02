@@ -36,8 +36,6 @@ const LoginPage = () => {
       );
 
       const { access } = response.data;
-
-      // Call the login function from context to store the token and email
       login(data.email, access);
     } catch (error) {
       setErrorMessage("Invalid email or password");

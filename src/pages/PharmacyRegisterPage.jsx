@@ -39,7 +39,7 @@ const PharmacyRegisterPage = () => {
     e.preventDefault();
     try {
       await axios.post(
-        "http://localhost:8031/api/user/register/pharmacy/",
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/register/pharmacy/`,
         formData
       );
       alert("Eczane başarıyla kaydedildi.");
@@ -49,7 +49,7 @@ const PharmacyRegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="py-8 bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
         <h2 className="text-3xl font-semibold text-center mb-6">
           Eczane Kayıt
@@ -137,7 +137,7 @@ const PharmacyRegisterPage = () => {
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">
-              Günlük iş istiyorum
+              Günlük çalışacak teknisyen arıyorum
             </label>
           </div>
           <div className="flex items-center">
@@ -148,7 +148,7 @@ const PharmacyRegisterPage = () => {
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">
-              Kalıcı iş istiyorum
+              Kalıcı çalışacak teknisyen arıyorum
             </label>
           </div>
           <button
