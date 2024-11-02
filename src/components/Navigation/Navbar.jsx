@@ -15,13 +15,13 @@ const Navbar = () => {
       <Link to="/">
         <img src={logo} alt="Logo" className="h-12 w-auto mr-4" />{" "}
       </Link>
-      <div className="flex space-x-4">
+      <div className="flex space-x-4 items-center">
         {user ? (
           <>
             <p>Merhaba, {user.email}</p>
             <button
               onClick={logout}
-              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition duration-300"
+              className="bg-red-600 font-bold text-white px-3 py-1 rounded hover:bg-red-700 transition duration-300"
             >
               Çıkış Yap
             </button>
@@ -30,14 +30,14 @@ const Navbar = () => {
           <>
             <Link
               to="/login"
-              className="bg-white text-red-500 px-3 py-1 rounded hover:bg-gray-200"
+              className="bg-white text-red-500 font-bold px-3 py-1 rounded hover:bg-gray-200"
             >
               Giriş Yap
             </Link>
             <div className="relative">
               <button
                 onClick={toggleDropdown}
-                className="bg-white text-red-500 px-3 py-1 rounded hover:bg-gray-200" // Kayıt Ol butonu
+                className="bg-white text-red-500 font-bold px-3 py-1 rounded hover:bg-gray-200" // Kayıt Ol butonu
               >
                 Kayıt Ol
               </button>
