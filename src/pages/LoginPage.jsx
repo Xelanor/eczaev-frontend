@@ -7,11 +7,11 @@ import { AuthContext } from "../context/AuthContext"; // Import the context
 
 // Define validation schema using Yup
 const schema = yup.object().shape({
-  email: yup.string().email("Invalid email").required("Email is required"),
+  email: yup.string().email("Geçersiz Email").required("Email gereklidir"),
   password: yup
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+    .min(6, "Şifre en az 6 karakter olmalıdır")
+    .required("Şifre gereklidir"),
 });
 
 const LoginPage = () => {
@@ -38,7 +38,7 @@ const LoginPage = () => {
       const { access } = response.data;
       login(data.email, access);
     } catch (error) {
-      setErrorMessage("Invalid email or password");
+      setErrorMessage("Hatalı email veya şifre");
     }
   };
 

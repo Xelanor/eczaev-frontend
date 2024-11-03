@@ -1,51 +1,101 @@
-import React, { useState } from "react";
+import React from "react";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Form doğrulama şeması
+const technicianSchema = yup.object().shape({
+  user: yup.object().shape({
+    email: yup
+      .string()
+      .email("Geçerli bir e-posta girin")
+      .required("E-posta zorunludur"),
+    password: yup
+      .string()
+      .min(6, "Şifre en az 6 karakter olmalıdır")
+      .required("Şifre zorunludur"),
+    user_type: yup.string().default("technician"), // Varsayılan değer olarak 'technician' belirleyin
+  }),
+  name: yup.string().required("Ad ve Soyad zorunludur"),
+  district: yup.string().required("İlçe zorunludur"),
+  birth_date: yup
+    .string()
+    .matches(
+      /^\d{4}-\d{2}-\d{2}$/,
+      "Doğum tarihi YYYY-MM-DD formatında olmalıdır"
+    )
+    .nullable(), // Doğum tarihi boş geçilebilir
+  phone_number: yup.string().required("Telefon numarası zorunludur"),
+  national_id: yup.string().required("TC Kimlik No zorunludur"),
+  daily_job: yup.boolean(),
+  permanent_job: yup.boolean(),
+});
 
 const TechnicianRegisterPage = () => {
-  const [formData, setFormData] = useState({
-    user: {
-      email: "",
-      password: "",
-      user_type: "technician", // Otomatik olarak teknisyen
-    },
-    name: "", // Ad ve soyadı tek bir alanda tutuyoruz
-    district: "",
-    birth_date: "",
-    phone_number: "",
-    national_id: "",
-    daily_job: false,
-    permanent_job: false,
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(technicianSchema),
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name.startsWith("user.")) {
-      const userField = name.split(".")[1]; // 'user.email' -> 'email'
-      setFormData({
-        ...formData,
-        user: {
-          ...formData.user,
-          [userField]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: type === "checkbox" ? checked : value,
-      });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/register/technician/`,
-        formData
+        data
       );
       alert("Teknisyen başarıyla kaydedildi.");
     } catch (error) {
-      console.error("Kayıt hatası:", error);
+      if (error.response && error.response.data) {
+        const apiErrors = error.response.data;
+
+        // API'den dönen hatalara göre setError kullanımı
+        if (apiErrors.user?.email) {
+          setError("user.email", {
+            type: "manual",
+            message: apiErrors.user.email[0],
+          });
+        }
+        if (apiErrors.user?.password) {
+          setError("user.password", {
+            type: "manual",
+            message: apiErrors.user.password[0],
+          });
+        }
+        if (apiErrors.name) {
+          setError("name", { type: "manual", message: apiErrors.name[0] });
+        }
+        if (apiErrors.district) {
+          setError("district", {
+            type: "manual",
+            message: apiErrors.district[0],
+          });
+        }
+        if (apiErrors.birth_date) {
+          setError("birth_date", {
+            type: "manual",
+            message: apiErrors.birth_date[0],
+          });
+        }
+        if (apiErrors.phone_number) {
+          setError("phone_number", {
+            type: "manual",
+            message: apiErrors.phone_number[0],
+          });
+        }
+        if (apiErrors.national_id) {
+          setError("national_id", {
+            type: "manual",
+            message: apiErrors.national_id[0],
+          });
+        }
+      } else {
+        alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      }
     }
   };
 
@@ -55,7 +105,7 @@ const TechnicianRegisterPage = () => {
         <h2 className="text-3xl font-semibold text-center mb-6">
           Teknisyen Kayıt
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Kullanıcı Bilgileri */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -63,11 +113,12 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="email"
-              name="user.email"
-              onChange={handleChange}
+              {...register("user.email")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.user?.email?.message}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -75,11 +126,12 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="password"
-              name="user.password"
-              onChange={handleChange}
+              {...register("user.password")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.user?.password?.message}
+            </p>
           </div>
 
           {/* Profil Bilgileri */}
@@ -89,11 +141,10 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="name"
-              onChange={handleChange}
+              {...register("name")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">{errors.name?.message}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -101,11 +152,10 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="district"
-              onChange={handleChange}
+              {...register("district")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">{errors.district?.message}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -113,8 +163,7 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="date"
-              name="birth_date"
-              onChange={handleChange}
+              {...register("birth_date")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
             />
           </div>
@@ -124,11 +173,12 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="tel"
-              name="phone_number"
-              onChange={handleChange}
+              {...register("phone_number")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.phone_number?.message}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -136,17 +186,17 @@ const TechnicianRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="national_id"
-              onChange={handleChange}
+              {...register("national_id")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.national_id?.message}
+            </p>
           </div>
           <div className="flex items-center">
             <input
               type="checkbox"
-              name="daily_job"
-              onChange={handleChange}
+              {...register("daily_job")}
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">
@@ -156,8 +206,7 @@ const TechnicianRegisterPage = () => {
           <div className="flex items-center">
             <input
               type="checkbox"
-              name="permanent_job"
-              onChange={handleChange}
+              {...register("permanent_job")}
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">

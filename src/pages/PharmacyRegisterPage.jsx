@@ -1,50 +1,96 @@
-import React, { useState } from "react";
+import React from "react";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Form doğrulama şeması
+const schema = yup.object().shape({
+  user: yup.object().shape({
+    email: yup
+      .string()
+      .email("Geçerli bir e-posta girin")
+      .required("E-posta zorunludur"),
+    password: yup
+      .string()
+      .min(6, "Şifre en az 6 karakter olmalıdır")
+      .required("Şifre zorunludur"),
+    user_type: yup.string().default("pharmacy"), // Varsayılan değer olarak 'technician' belirleyin
+  }),
+  pharmacy_name: yup.string().required("Eczane ismi zorunludur"),
+  responsible_person: yup.string().required("Sorumlu kişi adı zorunludur"),
+  address: yup.string().required("Adres zorunludur"),
+  gln_number: yup.string().required("GLN numarası zorunludur"),
+  daily_job: yup.boolean(),
+  permanent_job: yup.boolean(),
+});
 
 const PharmacyRegisterPage = () => {
-  const [formData, setFormData] = useState({
-    user: {
-      email: "",
-      password: "",
-      user_type: "pharmacy", // Otomatik olarak eczane olarak kaydedilecek
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      user: {
+        user_type: "pharmacy", // Sabit değer olarak "pharmacy" kullanılıyor
+      },
     },
-    pharmacy_name: "", // Eczanenin ismi
-    responsible_person: "", // Sorumlu kişi adı ve soyadı
-    address: "",
-    gln_number: "",
-    daily_job: false,
-    permanent_job: false,
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name.startsWith("user.")) {
-      const userField = name.split(".")[1]; // 'user.email' -> 'email'
-      setFormData({
-        ...formData,
-        user: {
-          ...formData.user,
-          [userField]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: type === "checkbox" ? checked : value,
-      });
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/register/pharmacy/`,
-        formData
+        data
       );
       alert("Eczane başarıyla kaydedildi.");
     } catch (error) {
-      console.error("Kayıt hatası:", error);
+      if (error.response && error.response.data) {
+        const apiErrors = error.response.data;
+
+        // API'den dönen hatalara göre setError kullanımı
+        if (apiErrors.user?.email) {
+          setError("user.email", {
+            type: "manual",
+            message: apiErrors.user.email[0],
+          });
+        }
+        if (apiErrors.user?.password) {
+          setError("user.password", {
+            type: "manual",
+            message: apiErrors.user.password[0],
+          });
+        }
+        if (apiErrors.pharmacy_name) {
+          setError("pharmacy_name", {
+            type: "manual",
+            message: apiErrors.pharmacy_name[0],
+          });
+        }
+        if (apiErrors.responsible_person) {
+          setError("responsible_person", {
+            type: "manual",
+            message: apiErrors.responsible_person[0],
+          });
+        }
+        if (apiErrors.address) {
+          setError("address", {
+            type: "manual",
+            message: apiErrors.address[0],
+          });
+        }
+        if (apiErrors.gln_number) {
+          setError("gln_number", {
+            type: "manual",
+            message: apiErrors.gln_number[0],
+          });
+        }
+      } else {
+        alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      }
     }
   };
 
@@ -54,7 +100,7 @@ const PharmacyRegisterPage = () => {
         <h2 className="text-3xl font-semibold text-center mb-6">
           Eczane Kayıt
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Kullanıcı Bilgileri */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -62,11 +108,12 @@ const PharmacyRegisterPage = () => {
             </label>
             <input
               type="email"
-              name="user.email"
-              onChange={handleChange}
+              {...register("user.email")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.user?.email?.message}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -74,11 +121,12 @@ const PharmacyRegisterPage = () => {
             </label>
             <input
               type="password"
-              name="user.password"
-              onChange={handleChange}
+              {...register("user.password")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.user?.password?.message}
+            </p>
           </div>
 
           {/* Profil Bilgileri */}
@@ -88,11 +136,12 @@ const PharmacyRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="pharmacy_name"
-              onChange={handleChange}
+              {...register("pharmacy_name")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.pharmacy_name?.message}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -100,22 +149,22 @@ const PharmacyRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="responsible_person"
-              onChange={handleChange}
+              {...register("responsible_person")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">
+              {errors.responsible_person?.message}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Adres
             </label>
             <textarea
-              name="address"
-              onChange={handleChange}
+              {...register("address")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">{errors.address?.message}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -123,17 +172,15 @@ const PharmacyRegisterPage = () => {
             </label>
             <input
               type="text"
-              name="gln_number"
-              onChange={handleChange}
+              {...register("gln_number")}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-              required
             />
+            <p className="text-red-500 text-sm">{errors.gln_number?.message}</p>
           </div>
           <div className="flex items-center">
             <input
               type="checkbox"
-              name="daily_job"
-              onChange={handleChange}
+              {...register("daily_job")}
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">
@@ -143,8 +190,7 @@ const PharmacyRegisterPage = () => {
           <div className="flex items-center">
             <input
               type="checkbox"
-              name="permanent_job"
-              onChange={handleChange}
+              {...register("permanent_job")}
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label className="ml-2 text-sm text-gray-700">
